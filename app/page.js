@@ -1,95 +1,97 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from "react";
+import { Drawer, Grid, IconButton, Typography } from "@mui/material";
+import UserList from "../components/UserList";
+import UserDetails from "../components/UserDetails";
+import Loader from "../components/Loader";
+import { IoMdClose } from "react-icons/io";
+
+const HomePage = () => {
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (window.innerWidth <= 600) {
+      setIsMobile(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetch("https://602e7c2c4410730017c50b9d.mockapi.io/users")
+      .then((response) => response.json())
+      .then((data) => {
+        setUsers(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(true);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleUserSelect = (user) => {
+    setSelectedUser(user);
+    if (isMobile) setDrawerOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (error || users.length === 0) {
+    return (
+      <Typography variant="h6" sx={{ marginTop: "100px", textAlign: "center" }}>
+        No data to show
+      </Typography>
+    );
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <Grid container>
+      <Grid item xs={12} sm={4}>
+        <UserList users={users} onSelectUser={handleUserSelect} />
+      </Grid>
+      <Grid
+        item
+        xs={8}
+        sx={{
+          backgroundColor: "#E7F0DC",
+          padding: "10px",
+          position: "sticky",
+          top: "0",
+          maxHeight: "100vh",
+        }}
+        display={{ xs: "none", sm: "block" }}
+      >
+        <UserDetails user={selectedUser} />
+      </Grid>
+      <Drawer anchor="right" open={drawerOpen} onClose={handleDrawerClose}>
+        <div
+          style={{
+            width: "400",
+            height: "100vh",
+            padding: 5,
+            backgroundColor: "#E7F0DC",
+          }}
+        >
+          <IconButton onClick={handleDrawerClose}>
+            <IoMdClose />
+          </IconButton>
+          <UserDetails user={selectedUser} />
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      </Drawer>
+    </Grid>
   );
-}
+};
+
+export default HomePage;
