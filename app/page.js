@@ -26,11 +26,13 @@ const HomePage = () => {
       .then((response) => response.json())
       .then((data) => {
         setUsers(data);
+        setError(false);
         setLoading(false);
       })
       .catch((err) => {
         console.error(err);
         setError(true);
+        setUsers([]);
         setLoading(false);
       });
   }, []);
